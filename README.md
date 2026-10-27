@@ -1,62 +1,144 @@
-# APPTUNIX: Office Chaos — Phases 1–2
+# APPTUNIX: Office Chaos
 
-A browser-based, stylised 3D recreation of the Apptunix Mohali office, built with Babylon.js, TypeScript, Vite and React.
+A stylised, story-driven 3D office adventure that runs entirely in the browser. It's a fictional, hand-crafted version of the Apptunix office in Mohali, inspired by the illustrated look of [Messenger](https://messenger.abeto.co/).
 
-- **Phase 1:** environment, art style, lighting, shaders, building, lift.
-- **Phase 2:** playable DRAGON, 31 NPCs with schedules and Recast navigation, sitting, computer, meeting rooms, branching dialogue. See `docs/PHASE_2_PROGRESS.md`.
+Built with **Babylon.js · TypeScript · Vite · React**. It renders on **WebGPU** and falls back to **WebGL 2** automatically.
 
-## Quick start
+![React department](docs/screenshots/phase2/dragon-walking-react.png)
+
+| | |
+|---|---|
+| ![Building entrance](docs/screenshots/entrance.png) | ![Conversation with Tushar](docs/screenshots/phase2/conversation-tushar.png) |
+| ![CR1 meeting](docs/screenshots/phase2/cr1-meeting.png) | ![React team](docs/screenshots/phase2/react-team-lineup.png) |
+
+---
+
+## Status
+
+| Phase | Scope | Status |
+|---|---|---|
+| **1. Environment** | Building, lift, 3rd-floor office (Reception, HR, React, Angular, Node.js, DevOps, Design, QA, CR1–3, break area), toon shading, outlines, lighting | ✅ Done |
+| **2. Characters & living office** | Playable DRAGON, 31 NPCs, schedules, Recast navigation, sitting, computer, meetings, branching dialogue | ✅ Done |
+| **3. Gameplay & story** | Chapter 1 "The Production Bug": missions, developer-computer mini-games, save/load | 🚧 Next |
+
+Progress reports: [Phase 1](docs/ENVIRONMENT_PROGRESS.md) · [Phase 2](docs/PHASE_2_PROGRESS.md)
+
+---
+
+## Features
+
+**World**
+- Six-storey building with a street front, a working lift (call buttons, sliding doors, floor indicator, chime) and automatic doors.
+- A fully furnished 3rd floor: department workstations with personal props, three distinct meeting rooms, pantry, lounge and server room.
+- A custom toon renderer: banded cel shading, coloured shadows, screen-space illustrated outlines, a custom shadow map and a warm colour grade. No bloom, no photoreal materials.
+
+**Characters**
+- **DRAGON**, the playable React developer: a hand-tuned hero model on a 31-bone rig with a face that blinks, makes expressions and tracks what it looks at.
+- **Movement:** acceleration-limited locomotion with momentum, lean into acceleration and braking, banking in turns, and stride-locked walk and run cycles so the feet don't slide.
+- **The React team:** Tushar, Mohit, Arpit, Vibhu, Rockey and Karan, plus at least four people in every other department, HR, a receptionist and support staff.
+
+**Living office**
+- An in-game clock drives the day: arrival, focused work, stand-ups, meetings in CR1–3, chats, lunch, chai breaks and going home.
+- NPCs walk on a Recast nav mesh with crowd avoidance and stuck recovery, open doors, and turn their heads to follow DRAGON.
+
+**Interactions**
+- Talk to anyone, sit at any free chair (one person per chair), and use DRAGON's computer (boot sequence plus a fictional desktop).
+- Drink water, make coffee, read boards and call the lift.
+- Data-driven branching dialogue in Hinglish, with an over-the-shoulder conversation camera.
+
+---
+
+## Getting started
+
+Requirements: **Node 20+** and a current desktop browser (Chrome or Edge recommended for WebGPU).
+
 ```bash
+git clone https://github.com/SHEKHAR3512/apptunix-office-chaos.git
+cd apptunix-office-chaos
 npm install
-npm run dev          # http://localhost:5173
+npm run dev            # → http://localhost:5173
 ```
 
-| URL parameter | Effect |
+Production build:
+
+```bash
+npm run build && npm run preview
+```
+
+### URL options
+
+| Parameter | Effect |
 |---|---|
-| `?renderer=webgl` / `?renderer=webgpu` | Force a backend (default: WebGPU, falling back to WebGL 2) |
+| `?renderer=webgl` / `?renderer=webgpu` | Force a rendering backend |
 | `?quality=low\|medium\|high\|ultra` | Graphics preset |
-| `?start=office` / `?start=react` | Spawn on the 3rd floor instead of the street |
-| `?time=11:00` | Start the office clock at a given time (default 09:45) |
+| `?start=office` / `?start=react` | Skip the street and spawn on the 3rd floor |
+| `?time=11:00` | Start the office clock at a given time |
 
-## Controls
-| Key | Action |
+### Controls
+
+| Input | Action |
 |---|---|
-| WASD + mouse (click to lock) | Move / look · Shift run · right mouse strafe · wheel zoom |
-| E | Interact: talk, sit, use computer, drink water, read, call lift |
-| X | Stand up |
-| 1–3 | Choose a dialogue reply (E / click advances lines) |
-| Esc | Pause (also exits the computer) |
-| G, 0–5 or click the HUD panel | Choose a floor inside the lift |
-| F | Free-fly camera (Q/E down/up, Shift fast) |
-| `` ` `` | Debug overlay: stats, view modes, viewpoints, anchors |
-| V | Cycle view mode (base colour, lighting, bands, normals, shadow map, outlines, depth) |
-| H | Hide ceilings · O settings · P hide help |
+| **WASD** · **Mouse** | Move · look (click the game to lock the mouse) |
+| **Shift** · **Right mouse** · **Wheel** | Run · strafe · zoom |
+| **E** | Interact: talk, sit, use the computer, drink, read, call the lift |
+| **X** | Stand up |
+| **1–3** | Pick a dialogue reply |
+| **G / 1–5** | Choose a floor inside the lift |
+| **Esc** | Pause / leave the computer |
+| **F** · **`** · **V** · **H** | Free camera · debug overlay · render debug views · hide ceilings |
 
-## Scripts
-| Script | Purpose |
-|---|---|
-| `npm run shots` | Capture every named viewpoint in Chrome → `docs/screenshots/`, regenerate `docs/ASSET_MANIFEST.md` |
-| `npm run playtest` | Automated walk-through (street → lift → 3F → React) with pass/fail checks |
-| `npm run assets:export` | Export prefabs to GLB, optimise with glTF Transform, round-trip verify |
-| `npm run assets:optimize` | Optimise Blender GLBs from `art-source/blender/` → `public/models/` |
-| `npm test` | Vitest unit tests (schedules, state machine, dialogue, seats, roster) |
-| `npm run test:e2e` | Playwright browser tests on WebGL 2 and WebGPU (saves `docs/screenshots/phase2/`) |
-| `npm run build` | Typecheck and production build |
+---
 
-The screenshot and playtest scripts need the dev server running and Google Chrome installed (`CHROME=` overrides the path).
+## Testing
 
-## Structure
-```
-src/core         Game loop, engine (WebGPU/WebGL2), scene/floor manager, settings, input, viewpoints
-src/rendering    Toon shaders, outline + grade post, shadow/lighting manager, palette, sky/dust
-src/assets       Modelling kit, material registry, UI atlas, asset manager, prefabs/
-src/world        Layout data, architecture kit, building shell, ground/3rd/upper floors, lift, doors, colliders, anchors
-src/environments Reception, HR, React, Angular, Node, DevOps, Design, QA, CR1–3, shared spaces
-src/game         characters/ (rig, appearance, animator, factory) · player/ · npc/ (schedule, FSM, navigation, manager) · interactions/ · dialogue/ · OfficeLife.ts
-src/data         characters/roster.ts · dialogues/ · schedules/ — edit people, lines and routines here
-src/ui           Loading screen, HUD, settings, dialogue panel, computer desktop, pause (React)
-docs/            Art direction, office references, progress, asset manifest, screenshots
-art-source/      Blender sources and handoff exports
+```bash
+npm test               # Vitest: schedules, clock, state machine, dialogue, seats, roster
+npm run test:e2e       # Playwright: 16 gameplay checks on WebGL 2 and WebGPU (real Chrome)
+npm run playtest       # scripted street → lift → office → React walk-through
+npm run shots          # captures every named viewpoint into docs/screenshots/
 ```
 
-Read `docs/ENVIRONMENT_ART_DIRECTION.md` before adding assets. The office layout is data-driven in `src/world/OfficeLayout.ts`, and every zone is provisional until verified (`docs/APPTUNIX_OFFICE_REFERENCES.md`).
+The browser suites need Google Chrome installed. Playwright starts the dev server automatically.
+
+---
+
+## Project structure
+
+```
+src/
+  core/          game loop, engine (WebGPU/WebGL 2), floors, settings, input
+  rendering/     toon shaders, outlines + grade, shadows/lighting, palette, sky
+  assets/        code-driven modelling kit, materials, texture atlas, prefabs
+  world/         layout data, architecture, building, floors, lift, doors, colliders
+  environments/  each department and room
+  game/
+    characters/  rig, appearance, DRAGON hero model, animator, factory
+    player/      movement physics, animation controller, camera
+    npc/         schedules, state machine, Recast navigation, manager
+    interactions/ dialogue/  OfficeLife.ts (ties it all together)
+  data/          characters, dialogues, schedules (edit content here)
+  ui/            React overlays: HUD, dialogue, computer, settings, pause
+tests/           unit/ (Vitest) and e2e/ (Playwright)
+docs/            art direction, office references, progress reports, screenshots
+art-source/      Blender handoff (exported reference GLBs and conventions)
+```
+
+**Editing content**
+- **People:** `src/data/characters/roster.ts`
+- **Lines:** `src/data/dialogues/`
+- **Routines:** `src/data/schedules/`
+- **Office layout:** `src/world/OfficeLayout.ts`
+
+---
+
+## Art direction & notes
+
+- Read [`docs/ENVIRONMENT_ART_DIRECTION.md`](docs/ENVIRONMENT_ART_DIRECTION.md) before adding assets.
+- Models are currently **code-modelled** (procedural meshes and skin weights). The GLB pipeline and Blender conventions in `art-source/` let artist-made models replace them.
+- The **office layout is provisional**: no public floor plan or photos were available. See [`docs/APPTUNIX_OFFICE_REFERENCES.md`](docs/APPTUNIX_OFFICE_REFERENCES.md).
+- **All characters, names outside the React team, dialogue, systems and incidents are fictional.** No real likenesses are used. The Apptunix logo and colours are placeholders until official assets are supplied.
+- No assets were taken from *Messenger*; only its general visual language inspired the look.
+
+---
+
+*Private project for the Apptunix team.*
