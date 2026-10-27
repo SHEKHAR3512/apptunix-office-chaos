@@ -1,0 +1,1151 @@
+{
+  "loadMs": 4066,
+  "backend": "webgpu",
+  "views": [
+    {
+      "name": "entrance",
+      "fps": 60.06006006006012,
+      "draws": 222,
+      "tris": 1020352
+    },
+    {
+      "name": "facade",
+      "fps": 60.02400960380806,
+      "draws": 223,
+      "tris": 1020354
+    },
+    {
+      "name": "groundLobby",
+      "fps": 60.12024048096196,
+      "draws": 203,
+      "tris": 1013286
+    },
+    {
+      "name": "liftLobby",
+      "fps": 59.95203836931581,
+      "draws": 573,
+      "tris": 2665156
+    },
+    {
+      "name": "liftInterior",
+      "fps": 60.00000000000006,
+      "draws": 514,
+      "tris": 2493208
+    },
+    {
+      "name": "reception",
+      "fps": 59.91611743556794,
+      "draws": 566,
+      "tris": 2942144
+    },
+    {
+      "name": "react",
+      "fps": 59.91611743562374,
+      "draws": 599,
+      "tris": 2739394
+    },
+    {
+      "name": "dragon",
+      "fps": 59.92808629643329,
+      "draws": 589,
+      "tris": 2669442
+    },
+    {
+      "name": "angular",
+      "fps": 60.00000000000021,
+      "draws": 585,
+      "tris": 2976980
+    },
+    {
+      "name": "node",
+      "fps": 59.95203836931581,
+      "draws": 585,
+      "tris": 2960580
+    },
+    {
+      "name": "devops",
+      "fps": 59.97600959613923,
+      "draws": 629,
+      "tris": 2744466
+    },
+    {
+      "name": "design",
+      "fps": 59.97600959619514,
+      "draws": 635,
+      "tris": 2830380
+    },
+    {
+      "name": "qa",
+      "fps": 59.96402158707016,
+      "draws": 691,
+      "tris": 3138746
+    },
+    {
+      "name": "hr",
+      "fps": 59.98800239950899,
+      "draws": 539,
+      "tris": 2579142
+    },
+    {
+      "name": "cr1",
+      "fps": 60.00000000000007,
+      "draws": 562,
+      "tris": 2664928
+    },
+    {
+      "name": "cr2",
+      "fps": 59.94005994006003,
+      "draws": 562,
+      "tris": 2590320
+    },
+    {
+      "name": "cr3",
+      "fps": 59.95203836926003,
+      "draws": 545,
+      "tris": 2577826
+    },
+    {
+      "name": "breakArea",
+      "fps": 60.07208650375983,
+      "draws": 526,
+      "tris": 2526672
+    },
+    {
+      "name": "lounge",
+      "fps": 59.98800239950902,
+      "draws": 515,
+      "tris": 2523718
+    },
+    {
+      "name": "corridor",
+      "fps": 60.036021612945525,
+      "draws": 633,
+      "tris": 3176704
+    },
+    {
+      "name": "overview",
+      "fps": 60.02400960386402,
+      "draws": 659,
+      "tris": 2516528
+    },
+    {
+      "name": "upperLobby",
+      "fps": 59.97600959613928,
+      "draws": 181,
+      "tris": 848034
+    }
+  ],
+  "assets": {
+    "backend": "webgpu",
+    "meshes": 320,
+    "materials": 22,
+    "atlasUsage": 0.8828125,
+    "prefabs": [
+      {
+        "name": "deskSetup",
+        "tris": 12442,
+        "count": 47,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage"
+        ]
+      },
+      {
+        "name": "buildingShell",
+        "tris": 315178,
+        "count": 1,
+        "materials": [
+          "wall",
+          "metal",
+          "wood",
+          "glass",
+          "glassExterior",
+          "plastic",
+          "fabric",
+          "floorCarpet",
+          "ceiling",
+          "light",
+          "print"
+        ]
+      },
+      {
+        "name": "chair:task",
+        "tris": 3592,
+        "count": 50,
+        "materials": [
+          "plastic",
+          "brushed",
+          "fabric"
+        ]
+      },
+      {
+        "name": "workstation",
+        "tris": 3620,
+        "count": 48,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light"
+        ]
+      },
+      {
+        "name": "section:node",
+        "tris": 160146,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage"
+        ]
+      },
+      {
+        "name": "section:angular",
+        "tris": 156242,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage"
+        ]
+      },
+      {
+        "name": "section:react",
+        "tris": 105694,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage",
+          "leather",
+          "wall"
+        ]
+      },
+      {
+        "name": "section:qa",
+        "tris": 80852,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage"
+        ]
+      },
+      {
+        "name": "exterior",
+        "tris": 78350,
+        "count": 1,
+        "materials": [
+          "pavement",
+          "floorStone",
+          "wall",
+          "decor",
+          "foliage",
+          "wood",
+          "light",
+          "metal",
+          "print",
+          "fabric",
+          "plastic",
+          "leather",
+          "glass",
+          "glassExterior"
+        ]
+      },
+      {
+        "name": "neighbourBuilding",
+        "tris": 18456,
+        "count": 4,
+        "materials": [
+          "wall",
+          "glassExterior",
+          "light"
+        ]
+      },
+      {
+        "name": "deskPlant",
+        "tris": 712,
+        "count": 88,
+        "materials": [
+          "decor",
+          "foliage"
+        ]
+      },
+      {
+        "name": "section:devops",
+        "tris": 58756,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage",
+          "wall"
+        ]
+      },
+      {
+        "name": "monitor",
+        "tris": 698,
+        "count": 83,
+        "materials": [
+          "plastic",
+          "display",
+          "light"
+        ]
+      },
+      {
+        "name": "section:design",
+        "tris": 54188,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "foliage",
+          "print"
+        ]
+      },
+      {
+        "name": "section:cr1",
+        "tris": 53976,
+        "count": 1,
+        "materials": [
+          "fabric",
+          "wood",
+          "plastic",
+          "display",
+          "metal",
+          "brushed",
+          "leather",
+          "decor",
+          "light",
+          "print",
+          "foliage"
+        ]
+      },
+      {
+        "name": "floor3:architecture",
+        "tris": 51026,
+        "count": 1,
+        "materials": [
+          "wall",
+          "floorStone",
+          "brushed",
+          "plastic",
+          "liftDisplay",
+          "light",
+          "print",
+          "ceiling",
+          "wood",
+          "display",
+          "metal",
+          "decor",
+          "foliage",
+          "floorWood",
+          "floorCarpet",
+          "floorTile",
+          "glass"
+        ]
+      },
+      {
+        "name": "keyboard",
+        "tris": 996,
+        "count": 48,
+        "materials": [
+          "plastic"
+        ]
+      },
+      {
+        "name": "groundLobby",
+        "tris": 44732,
+        "count": 1,
+        "materials": [
+          "wall",
+          "floorStone",
+          "brushed",
+          "plastic",
+          "liftDisplay",
+          "light",
+          "print",
+          "ceiling",
+          "wood",
+          "display",
+          "metal",
+          "decor",
+          "foliage",
+          "floorCarpet",
+          "fabric"
+        ]
+      },
+      {
+        "name": "section:hr",
+        "tris": 43278,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "print",
+          "foliage",
+          "wall"
+        ]
+      },
+      {
+        "name": "storageCabinet",
+        "tris": 4644,
+        "count": 9,
+        "materials": [
+          "wood",
+          "metal",
+          "brushed"
+        ]
+      },
+      {
+        "name": "chair:meeting",
+        "tris": 3484,
+        "count": 11,
+        "materials": [
+          "plastic",
+          "brushed",
+          "leather"
+        ]
+      },
+      {
+        "name": "section:reception",
+        "tris": 25932,
+        "count": 1,
+        "materials": [
+          "wall",
+          "wood",
+          "print",
+          "light",
+          "metal",
+          "plastic",
+          "display",
+          "decor",
+          "glass",
+          "foliage",
+          "brushed",
+          "fabric",
+          "floorCarpet"
+        ]
+      },
+      {
+        "name": "mug",
+        "tris": 444,
+        "count": 57,
+        "materials": [
+          "decor"
+        ]
+      },
+      {
+        "name": "section:cr3",
+        "tris": 24550,
+        "count": 1,
+        "materials": [
+          "wall",
+          "plastic",
+          "brushed",
+          "print",
+          "wood",
+          "metal",
+          "leather",
+          "decor",
+          "fabric",
+          "light",
+          "foliage"
+        ]
+      },
+      {
+        "name": "section:break",
+        "tris": 20840,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "brushed",
+          "wall",
+          "light",
+          "plastic",
+          "decor",
+          "display",
+          "glass",
+          "floorWood",
+          "fabric",
+          "leather",
+          "print",
+          "foliage"
+        ]
+      },
+      {
+        "name": "chair:visitor",
+        "tris": 1152,
+        "count": 17,
+        "materials": [
+          "brushed",
+          "fabric",
+          "plastic"
+        ]
+      },
+      {
+        "name": "chair:exec",
+        "tris": 3892,
+        "count": 5,
+        "materials": [
+          "plastic",
+          "brushed",
+          "leather"
+        ]
+      },
+      {
+        "name": "mouse",
+        "tris": 396,
+        "count": 48,
+        "materials": [
+          "fabric",
+          "plastic"
+        ]
+      },
+      {
+        "name": "plant:tree",
+        "tris": 1972,
+        "count": 9,
+        "materials": [
+          "decor",
+          "wood",
+          "foliage"
+        ]
+      },
+      {
+        "name": "sofa",
+        "tris": 3320,
+        "count": 5,
+        "materials": [
+          "fabric",
+          "wood"
+        ]
+      },
+      {
+        "name": "streetTree",
+        "tris": 2284,
+        "count": 7,
+        "materials": [
+          "wall",
+          "wood",
+          "foliage"
+        ]
+      },
+      {
+        "name": "bookshelf",
+        "tris": 3048,
+        "count": 5,
+        "materials": [
+          "wood",
+          "decor"
+        ]
+      },
+      {
+        "name": "heroWorkstation",
+        "tris": 14900,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "plastic",
+          "fabric",
+          "brushed",
+          "light",
+          "display",
+          "decor",
+          "foliage",
+          "print",
+          "leather"
+        ]
+      },
+      {
+        "name": "section:cr2",
+        "tris": 13944,
+        "count": 1,
+        "materials": [
+          "wall",
+          "plastic",
+          "display",
+          "metal",
+          "wood",
+          "brushed",
+          "fabric",
+          "decor",
+          "foliage",
+          "print"
+        ]
+      },
+      {
+        "name": "upperFloor",
+        "tris": 13374,
+        "count": 1,
+        "materials": [
+          "wall",
+          "floorStone",
+          "brushed",
+          "plastic",
+          "liftDisplay",
+          "light",
+          "print",
+          "ceiling",
+          "wood",
+          "display",
+          "metal",
+          "decor",
+          "foliage",
+          "glass",
+          "fabric"
+        ]
+      },
+      {
+        "name": "plant:snake",
+        "tris": 1420,
+        "count": 9,
+        "materials": [
+          "decor",
+          "foliage"
+        ]
+      },
+      {
+        "name": "section:corridors",
+        "tris": 12338,
+        "count": 1,
+        "materials": [
+          "ceiling",
+          "plastic",
+          "display",
+          "metal",
+          "decor",
+          "foliage",
+          "wood",
+          "print",
+          "brushed",
+          "fabric"
+        ]
+      },
+      {
+        "name": "plant:palm",
+        "tris": 1540,
+        "count": 8,
+        "materials": [
+          "decor",
+          "wood",
+          "foliage"
+        ]
+      },
+      {
+        "name": "section:lounge",
+        "tris": 12272,
+        "count": 1,
+        "materials": [
+          "floorCarpet",
+          "fabric",
+          "wood",
+          "metal",
+          "decor",
+          "glass",
+          "light",
+          "foliage"
+        ]
+      },
+      {
+        "name": "headphones",
+        "tris": 800,
+        "count": 12,
+        "materials": [
+          "plastic",
+          "fabric"
+        ]
+      },
+      {
+        "name": "plant:bush",
+        "tris": 1348,
+        "count": 7,
+        "materials": [
+          "decor",
+          "foliage"
+        ]
+      },
+      {
+        "name": "receptionDesk",
+        "tris": 3870,
+        "count": 2,
+        "materials": [
+          "wood",
+          "print",
+          "light",
+          "metal"
+        ]
+      },
+      {
+        "name": "acCassette",
+        "tris": 648,
+        "count": 11,
+        "materials": [
+          "ceiling"
+        ]
+      },
+      {
+        "name": "whiteboard",
+        "tris": 1398,
+        "count": 5,
+        "materials": [
+          "plastic",
+          "brushed",
+          "print",
+          "metal"
+        ]
+      },
+      {
+        "name": "bottle",
+        "tris": 408,
+        "count": 17,
+        "materials": [
+          "decor",
+          "plastic"
+        ]
+      },
+      {
+        "name": "scooter",
+        "tris": 1556,
+        "count": 4,
+        "materials": [
+          "plastic",
+          "leather",
+          "metal",
+          "light"
+        ]
+      },
+      {
+        "name": "pendantLamp",
+        "tris": 544,
+        "count": 11,
+        "materials": [
+          "metal",
+          "plastic",
+          "light"
+        ]
+      },
+      {
+        "name": "notebook",
+        "tris": 324,
+        "count": 16,
+        "materials": [
+          "decor"
+        ]
+      },
+      {
+        "name": "liftLanding",
+        "tris": 1552,
+        "count": 3,
+        "materials": [
+          "wall",
+          "floorStone",
+          "brushed",
+          "plastic",
+          "liftDisplay",
+          "light",
+          "print"
+        ]
+      },
+      {
+        "name": "dragonFigurine",
+        "tris": 2168,
+        "count": 2,
+        "materials": [
+          "decor"
+        ]
+      },
+      {
+        "name": "phone",
+        "tris": 110,
+        "count": 37,
+        "materials": [
+          "plastic",
+          "display"
+        ]
+      },
+      {
+        "name": "car",
+        "tris": 1780,
+        "count": 2,
+        "materials": [
+          "metal",
+          "glass",
+          "plastic",
+          "light"
+        ]
+      },
+      {
+        "name": "laptop",
+        "tris": 434,
+        "count": 8,
+        "materials": [
+          "brushed",
+          "plastic",
+          "display"
+        ]
+      },
+      {
+        "name": "fireExtinguisher",
+        "tris": 620,
+        "count": 5,
+        "materials": [
+          "metal",
+          "plastic",
+          "decor"
+        ]
+      },
+      {
+        "name": "door:slide:glass",
+        "tris": 672,
+        "count": 4,
+        "materials": [
+          "brushed",
+          "glass",
+          "plastic"
+        ]
+      },
+      {
+        "name": "door:swing:glass",
+        "tris": 672,
+        "count": 4,
+        "materials": [
+          "brushed",
+          "glass",
+          "plastic"
+        ]
+      },
+      {
+        "name": "lockers",
+        "tris": 2268,
+        "count": 1,
+        "materials": [
+          "metal",
+          "brushed"
+        ]
+      },
+      {
+        "name": "posterFrame",
+        "tris": 110,
+        "count": 20,
+        "materials": [
+          "wood",
+          "print"
+        ]
+      },
+      {
+        "name": "character:head",
+        "tris": 1908,
+        "count": 1,
+        "materials": [
+          "skin",
+          "fabric",
+          "decor",
+          "metal"
+        ]
+      },
+      {
+        "name": "section:server",
+        "tris": 1742,
+        "count": 1,
+        "materials": [
+          "metal",
+          "display",
+          "plastic",
+          "decor"
+        ]
+      },
+      {
+        "name": "liftCabin",
+        "tris": 1490,
+        "count": 1,
+        "materials": [
+          "floorStone",
+          "brushed",
+          "wood",
+          "glass",
+          "metal",
+          "light",
+          "print",
+          "liftDisplay"
+        ]
+      },
+      {
+        "name": "character:leg",
+        "tris": 708,
+        "count": 2,
+        "materials": [
+          "fabric",
+          "plastic"
+        ]
+      },
+      {
+        "name": "coffeeTable",
+        "tris": 448,
+        "count": 3,
+        "materials": [
+          "wood",
+          "metal"
+        ]
+      },
+      {
+        "name": "drawingTablet",
+        "tris": 324,
+        "count": 4,
+        "materials": [
+          "plastic"
+        ]
+      },
+      {
+        "name": "character:arm",
+        "tris": 632,
+        "count": 2,
+        "materials": [
+          "fabric",
+          "skin"
+        ]
+      },
+      {
+        "name": "character:torso",
+        "tris": 1240,
+        "count": 1,
+        "materials": [
+          "fabric",
+          "skin"
+        ]
+      },
+      {
+        "name": "meetingTable:rounded",
+        "tris": 1196,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "brushed",
+          "plastic"
+        ]
+      },
+      {
+        "name": "hangingSign",
+        "tris": 192,
+        "count": 6,
+        "materials": [
+          "plastic",
+          "print",
+          "metal"
+        ]
+      },
+      {
+        "name": "meetingTable:stadium",
+        "tris": 1148,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal",
+          "brushed",
+          "plastic"
+        ]
+      },
+      {
+        "name": "tvScreen",
+        "tris": 218,
+        "count": 5,
+        "materials": [
+          "plastic",
+          "display",
+          "metal"
+        ]
+      },
+      {
+        "name": "waterDispenser",
+        "tris": 1008,
+        "count": 1,
+        "materials": [
+          "plastic",
+          "glass",
+          "decor"
+        ]
+      },
+      {
+        "name": "deskLamp",
+        "tris": 484,
+        "count": 2,
+        "materials": [
+          "metal",
+          "light"
+        ]
+      },
+      {
+        "name": "liftDoorPanel",
+        "tris": 120,
+        "count": 8,
+        "materials": [
+          "brushed"
+        ]
+      },
+      {
+        "name": "wallClock",
+        "tris": 282,
+        "count": 3,
+        "materials": [
+          "plastic",
+          "print"
+        ]
+      },
+      {
+        "name": "serverRack",
+        "tris": 278,
+        "count": 3,
+        "materials": [
+          "metal",
+          "display"
+        ]
+      },
+      {
+        "name": "coffeeMachine",
+        "tris": 756,
+        "count": 1,
+        "materials": [
+          "plastic",
+          "brushed",
+          "decor",
+          "display"
+        ]
+      },
+      {
+        "name": "fridge",
+        "tris": 756,
+        "count": 1,
+        "materials": [
+          "metal",
+          "brushed",
+          "decor"
+        ]
+      },
+      {
+        "name": "lobbyBench",
+        "tris": 624,
+        "count": 1,
+        "materials": [
+          "wood",
+          "fabric",
+          "metal"
+        ]
+      },
+      {
+        "name": "meetingTable:round",
+        "tris": 604,
+        "count": 1,
+        "materials": [
+          "wood",
+          "metal"
+        ]
+      },
+      {
+        "name": "printer",
+        "tris": 540,
+        "count": 1,
+        "materials": [
+          "plastic",
+          "decor",
+          "display"
+        ]
+      },
+      {
+        "name": "door:swing",
+        "tris": 434,
+        "count": 1,
+        "materials": [
+          "wood",
+          "brushed",
+          "print"
+        ]
+      },
+      {
+        "name": "calendar",
+        "tris": 14,
+        "count": 9,
+        "materials": [
+          "decor",
+          "print"
+        ]
+      }
+    ],
+    "totalVertices": 1243898,
+    "building": {
+      "width": 48,
+      "depth": 34,
+      "floorHeight": 4,
+      "ceilingHeight": 3,
+      "wallThickness": 0.3,
+      "floors": [
+        "G",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  },
+  "logs": []
+}

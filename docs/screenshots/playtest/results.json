@@ -1,0 +1,133 @@
+[
+  {
+    "name": "spawn on street",
+    "ok": true,
+    "s": {
+      "x": 8.2,
+      "y": 0,
+      "z": -6.4,
+      "floor": 0,
+      "lift": "idle",
+      "liftLevel": 0,
+      "inLift": false,
+      "zone": "Phase 8, Mohali"
+    }
+  },
+  {
+    "name": "walked through entrance doors into lobby",
+    "ok": true,
+    "s": {
+      "x": 8.2,
+      "y": 0,
+      "z": 1.84,
+      "floor": 0,
+      "lift": "idle",
+      "liftLevel": 0,
+      "inLift": false,
+      "zone": "Lobby"
+    }
+  },
+  {
+    "name": "lift doors open after call",
+    "ok": true,
+    "s": {
+      "x": 4.44,
+      "y": 0,
+      "z": 7.4,
+      "floor": 0,
+      "lift": "open",
+      "liftLevel": 0,
+      "inLift": false,
+      "zone": "Lobby"
+    }
+  },
+  {
+    "name": "entered lift cabin",
+    "ok": true,
+    "s": {
+      "x": 1.5,
+      "y": 0,
+      "z": 6.3,
+      "floor": 0,
+      "lift": "open",
+      "liftLevel": 0,
+      "inLift": true,
+      "zone": "Lift"
+    }
+  },
+  {
+    "name": "arrived at floor 3",
+    "ok": true,
+    "s": {
+      "x": 1.5,
+      "y": 12,
+      "z": 6.3,
+      "floor": 3,
+      "lift": "open",
+      "liftLevel": 3,
+      "inLift": true,
+      "zone": "Lift"
+    }
+  },
+  {
+    "name": "stepped out into 3F lift lobby",
+    "ok": true,
+    "s": {
+      "x": 6.21,
+      "y": 12,
+      "z": 6.3,
+      "floor": 3,
+      "lift": "open",
+      "liftLevel": 3,
+      "inLift": false,
+      "zone": "Lift lobby"
+    }
+  },
+  {
+    "name": "auto glass doors let player into reception",
+    "ok": true,
+    "s": {
+      "x": 12.02,
+      "y": 12,
+      "z": 6.3,
+      "floor": 3,
+      "lift": "idle",
+      "liftLevel": 3,
+      "inLift": false,
+      "zone": "Reception"
+    }
+  },
+  {
+    "name": "walked from corridor into React department",
+    "ok": true,
+    "s": {
+      "x": 20,
+      "y": 12,
+      "z": 11.97,
+      "floor": 3,
+      "lift": "idle",
+      "liftLevel": 3,
+      "inLift": false,
+      "zone": "React"
+    }
+  },
+  {
+    "name": "desk collision stops player",
+    "ok": true,
+    "s": {
+      "x": 22.2,
+      "y": 12,
+      "z": 10.49,
+      "floor": 3,
+      "lift": "idle",
+      "liftLevel": 3,
+      "inLift": false,
+      "zone": "React"
+    }
+  },
+  {
+    "name": "no page errors",
+    "ok": true,
+    "s": []
+  }
+]
