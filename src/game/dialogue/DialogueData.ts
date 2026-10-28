@@ -2,7 +2,9 @@ import type { Expression } from "../characters/CharacterConfig";
 
 export type FlagValue = boolean | number | string;
 export type Condition =
-  | { flag: string; equals?: FlagValue; not?: boolean }
+  | { flag: string; equals?: FlagValue; not?: boolean; gte?: number; lte?: number }
+  /** relationship shorthand: rel.<name> ≥ gte */
+  | { rel: string; gte?: number; lte?: number }
   | { all: Condition[] }
   | { any: Condition[] }
   | { after: string } | { before: string };
@@ -14,7 +16,13 @@ export type DialogueEvent =
   | { type: "gesture"; speaker: string; gesture: "Waving" | "Pointing" | "Interacting" | "UsingPhone" | "DrinkingWater" }
   | { type: "emit"; name: string; data?: Record<string, FlagValue> };
 
-export interface DialogueChoice { text: string; next?: string; if?: Condition; set?: Record<string, FlagValue>; events?: DialogueEvent[] }
+export interface DialogueChoice {
+  text: string; next?: string; if?: Condition; set?: Record<string, FlagValue>; events?: DialogueEvent[];
+  /** stable id for missions (MAKE_DIALOGUE_CHOICE) and saves */
+  id?: string;
+  /** relationship deltas, e.g. { tushar: +1 } → flag rel.tushar */
+  rel?: Record<string, number>;
+}
 
 export interface DialogueNode {
   id: string;
@@ -24,8 +32,10 @@ export interface DialogueNode {
   expression?: Expression;
   choices?: DialogueChoice[];
   next?: string;
+  /** Conditional continuations (first match wins, else `next`). */
+  branch?: { if: Condition; next: string }[];
   events?: DialogueEvent[];
-  camera?: "twoShot" | "speaker" | "overShoulder";
+  camera?: "twoShot" | "speaker" | "overShoulder" | "wide" | "player";
 }
 
 export interface Conversation {

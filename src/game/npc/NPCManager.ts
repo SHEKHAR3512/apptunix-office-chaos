@@ -23,6 +23,14 @@ export class NPCManager {
   paused = false;
   playerPos = new Vector3();
   playerBusyWith: string | null = null;
+  /** Variety between sessions; `?seed=N` pins it, automation (webdriver) pins it to 0. */
+  readonly daySeed = (() => {
+    const q = new URLSearchParams(location.search).get("seed");
+    if (q !== null) return Number(q) || 0;
+    return navigator.webdriver ? 0 : Math.floor(Math.random() * 1000);
+  })();
+  /** Set by the story: NPCs it currently needs don't take spontaneous breaks. */
+  busy: (id: string) => boolean = () => false;
   stats = { thinking: 0, animating: 0 };
 
   constructor(private readonly ctx: WorldContext, private readonly factory: CharacterFactory, readonly seats: SeatRegistry, private readonly clock: GameClock) {
@@ -40,6 +48,8 @@ export class NPCManager {
       colleagues: (n) => this.npcs.filter((o) => o !== n && o.char.config.department === n.char.config.department),
       meetingSeats: (room) => this.seats.inZone(room, "meeting").map((s) => s.id),
       breakSeats: () => this.seats.all().filter((s) => s.kind === "break").map((s) => s.id),
+      daySeed: this.daySeed,
+      busy: (id) => this.busy(id),
     };
     for (const cfg of roster) {
       const floor = cfg.floor ?? 3;

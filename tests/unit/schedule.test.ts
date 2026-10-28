@@ -56,3 +56,30 @@ describe("NPC schedules", () => {
     }
   });
 });
+
+describe("micro-breaks", () => {
+  it("about half the office takes one short, staggered break in a long work block", async () => {
+    const { microBreak, resolveBlock } = await import("../../src/game/npc/NPCSchedule");
+    const takers: number[] = [];
+    for (let seed = 1; seed <= 40; seed++) {
+      const blk = resolveBlock("dev", 14 * 60, seed);
+      let first = -1, mins = 0;
+      for (let m = blk.start; m < blk.end; m++) if (microBreak(blk, m, seed)) { mins++; if (first < 0) first = m; }
+      expect([0, 6]).toContain(mins);
+      if (first >= 0) takers.push(first);
+    }
+    expect(takers.length).toBeGreaterThan(10);
+    expect(takers.length).toBeLessThan(32);
+    expect(new Set(takers).size).toBeGreaterThan(takers.length * 0.6); // not in lock-step
+  });
+  it("is deterministic for a seed, different across days, and never touches non-work blocks", async () => {
+    const { microBreak, resolveBlock } = await import("../../src/game/npc/NPCSchedule");
+    const blk = resolveBlock("dev", 14 * 60, 7);
+    const run = (day: number) => Array.from({ length: blk.end - blk.start }, (_, i) => !!microBreak(blk, blk.start + i, 7, day)).join();
+    expect(run(0)).toBe(run(0));
+    const days = new Set([0, 1, 2, 3, 4, 5, 6, 7].map(run));
+    expect(days.size).toBeGreaterThan(1);
+    const lunch = resolveBlock("dev", 13 * 60 + 10, 7);
+    expect(microBreak(lunch, 13 * 60 + 20, 7)).toBeNull();
+  });
+});

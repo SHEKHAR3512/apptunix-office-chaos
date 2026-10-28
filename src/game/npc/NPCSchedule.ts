@@ -27,3 +27,19 @@ export function resolveBlock(templateId: string, minutes: number, seed = 0): Res
   if (idx < 0) return { index: -1, start: 0, end: starts[0], activity: { kind: "leave" } };
   return { index: idx, start: starts[idx], end: idx + 1 < starts.length ? starts[idx + 1] : 24 * 60, activity: t.blocks[idx].activity };
 }
+
+/**
+ * Spontaneous micro-breaks inside long work blocks (water, a stretch at the window) so the
+ * office never looks frozen. Deterministic for a given (seed, daySeed): about half of the
+ * people take one ~6-minute break in each work block of 50+ minutes, each at their own time.
+ * Pure: unit-tested.
+ */
+export function microBreak(block: ResolvedBlock, minutes: number, seed: number, daySeed = 0): Activity | null {
+  if (block.activity.kind !== "work" || block.end - block.start < 50) return null;
+  const k = seed * 31 + daySeed * 17 + block.index * 7;
+  if (Math.abs(jitter(k, 1, 100)) < 50) return null; // ~half of people skip this block
+  const span = block.end - block.start - 22;
+  const at = block.start + 10 + Math.floor(((jitter(k, 2, 100) + 100) / 200) * span);
+  if (minutes < at || minutes >= at + 6) return null;
+  return { kind: "break", spot: (["water", "coffee", "lounge"] as const)[Math.abs(k) % 3] };
+}

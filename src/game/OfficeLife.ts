@@ -3,6 +3,9 @@ import type { Game } from "../core/Game";
 import { hud } from "../core/Store";
 import { REACT_DIALOGUES } from "../data/dialogues/react";
 import { OFFICE_DIALOGUES } from "../data/dialogues/office";
+import { CHAPTER1_DIALOGUES } from "../data/dialogues/chapter1";
+import { SIDE_DIALOGUES } from "../data/dialogues/side";
+import type { GameEventType } from "./gameplay/GameEventBus";
 import { ROSTER, SECURITY } from "../data/characters/roster";
 import { floorY } from "../world/OfficeLayout";
 import type { Character } from "./characters/CharacterFactory";
@@ -31,12 +34,22 @@ export class OfficeLife {
   private actionTimer = 0;
   private overlayCb: (() => void) | null = null;
   computerOpen = false;
+  /** Story hook: mission-specific conversation for an NPC (null → default). */
+  dialogueOverride: (npcId: string) => string | null = () => null;
+  /** True when a live objective needs this NPC (they stay talkable while seated). */
+  npcWanted: (npcId: string) => number = () => 0;
+  /** Story hook: camera for a dialogue node in a scene (meetings / cutscenes). */
+  sceneCamera: ((speaker: string, shot: string | undefined) => void) | null = null;
+  /** Participants of a multi-speaker scene (meeting, finale). */
+  private scene: NPCController[] = [];
+  private sceneConv: string | null = null;
+  onSceneEnd: ((conversation: string) => void) | null = null;
 
   constructor(private readonly g: Game) {
     const start = new URLSearchParams(location.search).get("time") ?? "09:45";
     this.clock = new GameClock(start);
     this.dialogue.now = () => this.clock.minutes;
-    this.dialogue.register([...REACT_DIALOGUES, ...OFFICE_DIALOGUES]);
+    this.dialogue.register([...REACT_DIALOGUES, ...OFFICE_DIALOGUES, ...CHAPTER1_DIALOGUES, ...SIDE_DIALOGUES]);
   }
 
   async init(progress: (v: number, label: string) => void): Promise<void> {
@@ -59,8 +72,8 @@ export class OfficeLife {
     g.player.move.bodies = () => (g.scenes.activeFloor === 3 ? this.npcs.bodies() : []);
 
     // interactions
-    registerChairInteractions(this.interactions, this.seats, g.player, (seat) => this.onSeated(seat.id, seat.kind), () => this.onStood());
-    registerNPCInteractions(this.interactions, this.npcs.npcs, g.player, (n) => this.startDialogue(n));
+    registerChairInteractions(this.interactions, this.seats, g.player, (seat) => this.onSeated(seat.id, seat.kind), (seat) => this.onStood(seat.id));
+    registerNPCInteractions(this.interactions, this.npcs.npcs, g.player, (n) => this.startDialogue(n), (id) => this.npcWanted(id));
     this.registerObjects();
 
     // DRAGON's computer
@@ -77,22 +90,23 @@ export class OfficeLife {
 
     this.dialogue.onChange = (v) => this.renderDialogue(v);
     this.dialogue.onEvent = (e) => this.handleEvent(e);
+    this.dialogue.onChoice = (conversation, node, choice) => g.bus.emit("DIALOGUE_CHOICE", { conversation, node, choice });
   }
 
   private registerObjects(): void {
     const g = this.g, ctx = g.ctx;
     const y3 = floorY(3);
     const obj = (id: string, label: string, type: "drink" | "coffee" | "read", pos: Vector3, act: () => void, radius = 1.4) =>
-      this.interactions.add({ id, label, type, radius, position: () => pos, available: () => g.player.isFree, activate: act });
+      this.interactions.add({ id, label, type, radius, position: () => pos, available: () => g.player.isFree, activate: () => { act(); g.bus.emit("OBJECT_INTERACTED", { object: id }); } });
     const water = ctx.anchors.get("break.waterDispenser");
     if (water) obj("water", "Drink Water", "drink", new Vector3(0.5, y3, 33.35), () => this.playAction("DrinkingWater", new Vector3(0.4, y3 + 1, 33.35), 3.4, "Refreshing. 💧"));
     obj("coffee", "Make Coffee", "coffee", new Vector3(0.45, y3, 28.4), () => this.playAction("Interacting", new Vector3(0.4, y3 + 1, 28.4), 2.0, "Coffee brewing… ☕", () => this.playAction("DrinkingWater", new Vector3(0.4, y3 + 1, 28.4), 3, null)));
     obj("notice", "Read Noticeboard", "read", new Vector3(9.9, y3, 28.0), () => this.showOverlay("Noticeboard", ["🎉 Friday Fun — 5 PM, Lounge", "🎂 Birthday today: Karan!", "💻 Hackathon in November — form teams with HR", "🧹 Please keep the pantry clean", "✨ Welcome to our new joiners", "🏏 Inter-department cricket league sign-ups open"]), 1.8);
-    obj("roadmap", "Read Whiteboard", "read", new Vector3(18.6, y3, 6.0), () => this.showOverlay("React Q4 Roadmap", ["✓ Driver app redesign", "✓ Payment retries", "• Ride-share v3", "• Admin analytics", "• Offline mode"]), 1.8);
+    obj("roadmap", "Read Whiteboard", "read", new Vector3(18.6, y3, 6.0), () => this.showOverlay("React · Sprint 42 & Q4 roadmap", ["Sprint 42 (fictional): APX-301 cart fix · APX-288 retry backoff · Storybook variants", "Sprint goal: “Checkout that just works” 🎯", "Q4: ✓ Driver app redesign · ✓ Payment retries · • Ride-share v3 · • Admin analytics · • Offline mode"]), 1.8);
     // lift call now goes through the interaction system
     for (let L = 0; L < 6; L++) {
       const cp = g.lift.callPoint(L);
-      this.interactions.add({ id: `lift:${L}`, type: "lift", label: "Call the lift", radius: 1.6, facing: false, position: () => cp, available: () => g.player.isFree && g.scenes.activeFloor === L && !g.lift.playerInside, activate: () => g.requestLift(L) });
+      this.interactions.add({ id: `lift:${L}`, type: "lift", label: "Call the lift", radius: 1.6, facing: false, position: () => cp, available: () => g.player.isFree && g.scenes.activeFloor === L && !g.lift.playerInside, activate: () => g.requestLift(L, "call") });
     }
   }
 
@@ -120,19 +134,19 @@ export class OfficeLife {
 
   private onSeated(id: string, kind: string): void {
     const g = this.g;
+    const zone = this.seats.get(id)?.zone ?? "";
+    g.bus.emit("PLAYER_SAT", { seat: id, zone: zone.split(".")[0] });
     if (kind === "meeting") {
       // look toward the room's screen / speaker
       const room = id.split(".")[0];
       const front: Record<string, Vector3> = { cr1: new Vector3(10.3, floorY(3) + 1.6, 29.6), cr2: new Vector3(29.8, floorY(3) + 1.5, 30), cr3: new Vector3(35.8, floorY(3) + 1.5, 28.6) };
       g.player.char.animator.lookTarget = front[room] ?? null;
       g.player.char.animator.play("SitListening", 0.4);
-      hud.set({ toast: `Joined ${room.toUpperCase()} — meeting events arrive in Phase 3` });
-      this.actionTimer = 3; this.overlayCb = () => hud.set({ toast: null });
-      g.emit("meeting:joined", { room });
+      g.bus.emit("MEETING_JOINED", { room });
     }
   }
 
-  private onStood(): void { this.g.player.char.animator.lookTarget = null; }
+  private onStood(seat?: string): void { this.g.player.char.animator.lookTarget = null; this.g.bus.emit("PLAYER_STOOD", { seat: seat ?? "" }); }
 
   openComputer(): void {
     const g = this.g;
@@ -143,6 +157,7 @@ export class OfficeLife {
     g.input.releasePointer();
     hud.set({ computer: this.computer.state === "desktop" ? "desktop" : "booting" });
     this.computer.onStateChange = (s) => hud.set({ computer: s });
+    g.bus.emit("COMPUTER_STARTED", {});
   }
 
   closeComputer(): void {
@@ -151,14 +166,19 @@ export class OfficeLife {
     this.g.cam.setScripted(null);
     this.g.player.char.animator.play("Sitting", 0.4);
     hud.set({ computer: null });
+    this.g.bus.emit("COMPUTER_CLOSED", {});
   }
 
   // ------------------------------------------------------------------------------- dialogue
 
   startDialogue(n: NPCController): void {
     const g = this.g;
-    const id = n.char.config.dialogue && this.dialogue.has(n.char.config.dialogue) ? n.char.config.dialogue : `${n.char.config.department}_generic`;
+    const ov = this.dialogueOverride(n.id);
+    const id = ov && this.dialogue.has(ov) ? ov : n.char.config.dialogue && this.dialogue.has(n.char.config.dialogue) ? n.char.config.dialogue : `${n.char.config.department}_generic`;
     if (!this.dialogue.has(id)) return;
+    this.scene = [n];
+    this.sceneConv = id;
+    g.bus.emit("NPC_DIALOGUE_STARTED", { npc: n.id, conversation: id });
     this.talkingTo = n;
     this.npcs.playerBusyWith = n.id;
     n.beginDialogue(g.player.pos);
@@ -168,6 +188,38 @@ export class OfficeLife {
     g.player.char.animator.lookTarget = n.char.headPosition;
     this.dialogue.start(id);
   }
+
+  /**
+   * Multi-speaker scene (meeting, finale): every participant listens/looks at whoever speaks,
+   * the camera is driven per node by `sceneCamera`. Participants keep their seats/places.
+   */
+  startScene(conversation: string, participants: NPCController[], primary: NPCController): boolean {
+    const g = this.g;
+    if (!this.dialogue.has(conversation) || this.dialogue.active) return false;
+    this.scene = participants;
+    this.sceneConv = conversation;
+    this.talkingTo = primary;
+    this.npcs.playerBusyWith = primary.id;
+    for (const n of participants) n.beginDialogue(g.player.pos, true);
+    g.player.lock();
+    g.input.releasePointer();
+    g.bus.emit("NPC_DIALOGUE_STARTED", { npc: primary.id, conversation });
+    this.dialogue.start(conversation);
+    return true;
+  }
+
+  /** A conversation with no NPC (DRAGON reading or thinking), e.g. a whiteboard riddle. */
+  startSolo(conversation: string): boolean {
+    const g = this.g;
+    if (!this.dialogue.has(conversation) || this.dialogue.active) return false;
+    this.scene = []; this.sceneConv = conversation; this.talkingTo = null;
+    g.player.lock();
+    g.input.releasePointer();
+    this.dialogue.start(conversation);
+    return true;
+  }
+
+  get inScene(): boolean { return this.scene.length > 1; }
 
   /**
    * Over-the-shoulder two-shot: camera behind DRAGON's shoulder, offset to the side and
@@ -207,14 +259,20 @@ export class OfficeLife {
     const g = this.g, n = this.talkingTo;
     if (!v) {
       hud.set({ dialogue: null });
-      if (n) n.endDialogue();
+      const conv = this.sceneConv, members = this.scene;
+      for (const m of members) { m.endDialogue(); m.char.animator.lookTarget = null; }
+      if (n && !members.includes(n)) n.endDialogue();
+      this.scene = []; this.sceneConv = null;
+      if (n && conv) g.bus.emit("NPC_DIALOGUE_COMPLETED", { npc: n.id, conversation: conv });
+      if (conv && members.length > 1) this.onSceneEnd?.(conv);
       this.talkingTo = null;
       this.npcs.playerBusyWith = null;
       g.player.unlock();
       g.player.char.animator.lookTarget = null;
       g.player.char.animator.talking = false;
       g.player.char.animator.expression = "neutral";
-      g.player.char.animator.play("Locomotion", 0.3);
+      if (g.player.mode === "locked") g.player.char.animator.play("Locomotion", 0.3);
+      else if (g.player.isSeated) g.player.char.animator.play("Sitting", 0.3);
       g.cam.setScripted(null);
       return;
     }
@@ -222,13 +280,22 @@ export class OfficeLife {
     const playerSpeaks = sp === "player";
     const pa = g.player.char.animator;
     pa.talking = playerSpeaks;
-    pa.play(playerSpeaks ? "Talking" : "Listening", 0.3);
+    const seated = g.player.isSeated;
+    pa.play(seated ? (playerSpeaks ? "SitTalking" : "SitListening") : playerSpeaks ? "Talking" : "Listening", 0.3);
     if (playerSpeaks && v.node.expression) pa.expression = v.node.expression;
-    if (n) {
-      n.speak(!playerSpeaks);
-      if (!playerSpeaks && v.node.expression) n.char.animator.expression = v.node.expression;
+    // who is speaking: "$npc" = primary, else an explicit character id
+    const speakerNpc = playerSpeaks ? null : sp === "$npc" ? n : (this.scene.find((m) => m.id === sp) ?? (n && n.id === sp ? n : null));
+    const members = this.scene.length ? this.scene : n ? [n] : [];
+    const speakerHead = speakerNpc ? speakerNpc.char.headPosition : g.player.char.headPosition;
+    for (const m of members) {
+      const me = m === speakerNpc;
+      m.speak(me);
+      if (me && v.node.expression) m.char.animator.expression = v.node.expression;
+      m.char.animator.lookTarget = me ? g.player.char.headPosition : speakerHead;
     }
-    const dept = n?.char.config.department ?? "react";
+    pa.lookTarget = speakerNpc ? speakerNpc.char.headPosition : n ? n.char.headPosition : null;
+    if (this.sceneCamera && members.length > 1) this.sceneCamera(speakerNpc ? speakerNpc.id : "player", v.node.camera);
+    const dept = (speakerNpc ?? n)?.char.config.department ?? "react";
     hud.set({ dialogue: { speaker: this.speakerName(sp), isPlayer: playerSpeaks, text: v.node.text.replace("$name", "Dragon"), choices: v.choices.map((c) => c.text), dept } });
   }
 
@@ -249,7 +316,11 @@ export class OfficeLife {
       const c = e.speaker === "player" ? this.g.player.char : this.npcs.get(e.speaker)?.char;
       if (c) c.animator.expression = e.expression;
     }
-    this.g.emit(`dialogue:${e.type}`, e as unknown as Record<string, unknown>);
+    if (e.type === "emit") {
+      const known = ["TASK_ACCEPTED", "QA_BUG_REPRODUCED", "BUILD_TESTS_PASSED", "DEPLOYMENT_COMPLETED"];
+      if (known.includes(e.name)) this.g.bus.emit(e.name as GameEventType, (e.data ?? {}) as never);
+      else if (e.name !== "dialogueEnded") this.g.bus.emit("STORY_EVENT", { id: e.name });
+    }
   }
 
   // ------------------------------------------------------------------------------- frame
@@ -268,7 +339,7 @@ export class OfficeLife {
     this.computer?.update(dt);
     if (this.actionTimer > 0) { this.actionTimer -= dt; if (this.actionTimer <= 0) { const cb = this.overlayCb; this.overlayCb = null; cb?.(); } }
     // interactions (only when free or seated and nothing modal is open)
-    const modal = !!hud.get().dialogue || this.computerOpen || !!hud.get().overlay || g.cam.mode === "fly";
+    const modal = !!hud.get().dialogue || this.computerOpen || !!hud.get().overlay || g.cam.mode === "fly" || !!g.story?.overlayActive || !!g.story?.finaleRunning;
     this.interactions.enabled = !modal && !g.lift.playerInside;
     this.interactions.update(g.player.pos, g.player.yaw);
     const clockLabel = formatTime(this.clock.minutes);

@@ -19,9 +19,10 @@ Built with **Babylon.js · TypeScript · Vite · React**. It renders on **WebGPU
 |---|---|---|
 | **1. Environment** | Building, lift, 3rd-floor office (Reception, HR, React, Angular, Node.js, DevOps, Design, QA, CR1–3, break area), toon shading, outlines, lighting | ✅ Done |
 | **2. Characters & living office** | Playable DRAGON, 31 NPCs, schedules, Recast navigation, sitting, computer, meetings, branching dialogue | ✅ Done |
-| **3. Gameplay & story** | Chapter 1 "The Production Bug": missions, developer-computer mini-games, save/load | 🚧 Next |
+| **3. Gameplay & story** | Chapter 1 "The Production Bug": six missions, developer-computer mini-games, cinematics, save/load | ✅ Done |
+| **4. Living office** | Walking-validated chapter, five side jobs, story consequences, office details, NPC micro-breaks | 🟡 Built; browser re-test pending |
 
-Progress reports: [Phase 1](docs/ENVIRONMENT_PROGRESS.md) · [Phase 2](docs/PHASE_2_PROGRESS.md)
+Progress reports: [Phase 1](docs/ENVIRONMENT_PROGRESS.md) · [Phase 2](docs/PHASE_2_PROGRESS.md) · [Phase 3](docs/PHASE_3_IMPLEMENTATION.md) · [Phase 4](docs/PHASE_4_IMPLEMENTATION.md) ([tests](docs/PHASE_4_TEST_RESULTS.md))
 
 ---
 
@@ -45,6 +46,12 @@ Progress reports: [Phase 1](docs/ENVIRONMENT_PROGRESS.md) · [Phase 2](docs/PHAS
 - Talk to anyone, sit at any free chair (one person per chair), and use DRAGON's computer (boot sequence plus a fictional desktop).
 - Drink water, make coffee, read boards and call the lift.
 - Data-driven branching dialogue in Hinglish, with an over-the-shoulder conversation camera.
+
+**Chapter 1 — The Production Bug**
+- Six missions: arrival, the CR1 stand-up ("bas ek chhota sa change hai"), a React state-mutation bug, a QA mobile-layout rejection, a chai break with side conversations, and a Friday deploy that ends in a team cinematic.
+- DRAGON's workstation runs a fictional desktop: Task Board, Code Editor (find the bug, choose a fix, run tests, hints and retries), Team Chat, Terminal and Browser Preview.
+- The deploy terminal is a simulation. Input goes through an allowlisted parser, and nothing is ever executed.
+- Quest HUD with a waypoint marker, a journal (**J**), an office map (**M**), relationship choices, autosave, Continue / New Game / Reset, and save export/import.
 
 ---
 
@@ -73,6 +80,8 @@ npm run build && npm run preview
 | `?quality=low\|medium\|high\|ultra` | Graphics preset |
 | `?start=office` / `?start=react` | Skip the street and spawn on the 3rd floor |
 | `?time=11:00` | Start the office clock at a given time |
+| `?diag=1` / `?seed=N` | Dev only: navigation diagnostics panel / pin NPC day variety |
+| `?new=1` / `?continue=1` | Skip the title screen: start a new story or continue the saved one |
 
 ### Controls
 
@@ -84,16 +93,17 @@ npm run build && npm run preview
 | **X** | Stand up |
 | **1–3** | Pick a dialogue reply |
 | **G / 1–5** | Choose a floor inside the lift |
+| **J** · **M** · **U** | Journal · map · hide the quest HUD |
 | **Esc** | Pause / leave the computer |
-| **F** · **`** · **V** · **H** | Free camera · debug overlay · render debug views · hide ceilings |
+| **F** · **`** · **V** · **H** | Dev builds only: free camera · debug overlay · render debug views · hide ceilings |
 
 ---
 
 ## Testing
 
 ```bash
-npm test               # Vitest: schedules, clock, state machine, dialogue, seats, roster
-npm run test:e2e       # Playwright: 16 gameplay checks on WebGL 2 and WebGPU (real Chrome)
+npm test               # Vitest: schedules, dialogue, seats, missions, puzzles, terminal, saves
+npm run test:e2e       # Playwright: Phase 2 checks + full Chapter 1 playthrough, WebGL 2 and WebGPU
 npm run playtest       # scripted street → lift → office → React walk-through
 npm run shots          # captures every named viewpoint into docs/screenshots/
 ```

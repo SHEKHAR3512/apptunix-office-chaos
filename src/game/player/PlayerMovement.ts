@@ -28,6 +28,8 @@ export class PlayerMovement {
   accelLat = 0;
   /** True while braking hard to reverse direction at speed (pivot). */
   pivoting = false;
+  /** Fraction of the intended step lost to collision last frame (0 = free, 1 = fully blocked). */
+  blockage = 0;
   // tuning (m/s²) — accelerate briskly, brake slightly harder, runs carry momentum
   accelWalk = 7;
   accelRun = 9.5;
@@ -97,13 +99,16 @@ export class PlayerMovement {
     const kA = 1 - Math.exp(-dt * 10);
     this.accelFwd += ((dt > 0 ? (sp - spPrev) / dt : 0) - this.accelFwd) * kA;
 
-    const steps = Math.max(1, Math.ceil((Math.hypot(this.vel.x, this.vel.z) * dt) / 0.08));
+    const want0 = Math.hypot(this.vel.x, this.vel.z) * dt, px = this.pos.x, pz = this.pos.z;
+    const steps = Math.max(1, Math.ceil(want0 / 0.08));
     for (let n = 0; n < steps; n++) {
       this.pos.x += (this.vel.x * dt) / steps;
       this.pos.z += (this.vel.z * dt) / steps;
       this.colliders.resolveCircle(this.pos, this.radius, this.height);
       this.pushBodies();
     }
+    const moved = Math.hypot(this.pos.x - px, this.pos.z - pz);
+    this.blockage = want0 > 1e-4 ? Math.max(0, Math.min(1, 1 - moved / want0)) : 0;
     const gy = this.groundAt(this.pos);
     this.pos.y += (gy - this.pos.y) * Math.min(1, dt * 20);
     if (Math.abs(gy - this.pos.y) < 0.002 || Math.abs(gy - this.pos.y) > 1.5) this.pos.y = gy;

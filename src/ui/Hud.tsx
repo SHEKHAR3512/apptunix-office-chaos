@@ -1,3 +1,4 @@
+import { usePlay } from "../game/gameplay/PlayState";
 import { useHud, hud } from "../core/Store";
 import { FLOOR_LABELS } from "../world/Lift";
 import { VIEW_MODES } from "../core/Game";
@@ -5,6 +6,8 @@ import { VIEWPOINTS } from "../core/Viewpoints";
 import { getGame } from "./App";
 
 export function Hud() {
+  const mode = usePlay("mode");
+  const card = usePlay("chapterCard");
   const prompt = useHud("prompt");
   const inLift = useHud("inLift");
   const liftFloor = useHud("liftFloor");
@@ -44,7 +47,7 @@ export function Hud() {
           <b>E</b> interact (talk · sit · use) · <b>X</b> stand up · <b>RMB</b> strafe · <b>Esc</b> pause · <b>F</b> free camera · <b>`</b> debug · <b>P</b> hide help
         </div>
       )}
-      {!locked && !dialogue && !computer && <div className="click-hint">Click to look around</div>}
+      {!locked && !dialogue && !computer && !card && mode !== "title" && <div className="click-hint">Click to look around</div>}
       {debug && (
         <div className="debug">
           <pre>{stats}</pre>

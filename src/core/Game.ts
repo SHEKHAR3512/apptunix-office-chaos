@@ -8,6 +8,9 @@ import { PlayerCharacter } from "../game/player/PlayerCharacter";
 import { Character, CharacterFactory } from "../game/characters/CharacterFactory";
 import { DRAGON } from "../data/characters/roster";
 import { OfficeLife } from "../game/OfficeLife";
+import { GameEventBus } from "../game/gameplay/GameEventBus";
+import { StoryDirector } from "../game/story/StoryDirector";
+import { play } from "../game/gameplay/PlayState";
 import { createDust, createSky } from "../rendering/EnvironmentEffects";
 import { EXTERIOR, LightingManager } from "../rendering/LightingManager";
 import { OutlineSystem } from "../rendering/OutlineSystem";
@@ -21,6 +24,7 @@ import { buildUpperFloor } from "../world/UpperFloor";
 import { WorldContext } from "../world/WorldContext";
 import { createEngine, Backend } from "./Engine";
 import { Input } from "./Input";
+import { sfx } from "./Audio";
 import { SceneManager } from "./SceneManager";
 import { GameSettings, loadSettings, QUALITY, saveSettings } from "./Settings";
 import { hud } from "./Store";
@@ -49,6 +53,8 @@ export class Game {
   cam!: CameraController;
   doors: Door[] = [];
   life!: OfficeLife;
+  story!: StoryDirector;
+  readonly bus = new GameEventBus();
   readonly eventLog: { name: string; data?: unknown; t: number }[] = [];
   private listeners = new Map<string, ((d: unknown) => void)[]>();
   assets!: AssetManager;
@@ -138,6 +144,7 @@ export class Game {
 
     this.lift.onArrive = (level) => {
       if (this.lift.playerInside) { this.scenes.setActiveFloor(level); if (level === 3) this.life?.npcs.catchUp(); }
+      this.bus.emit("LIFT_ARRIVED", { floor: level, withPlayer: this.lift.playerInside });
       hud.set({ liftFloor: FLOOR_LABELS[level], liftTarget: null });
     };
     this.lift.onDepart = (_from, to) => {
@@ -156,6 +163,9 @@ export class Game {
 
     this.life = new OfficeLife(this);
     await this.life.init(progress);
+    progress(0.9, "Loading your progress…");
+    this.story = new StoryDirector(this);
+    await this.story.init();
 
     this.sceneInst = new SceneInstrumentation(scene);
     this.sceneInst.captureFrameTime = true;
@@ -173,10 +183,17 @@ export class Game {
     this.atlas.commit();
     progress(1, "Welcome to Apptunix");
     hud.set({ ready: true });
+    if (params.get("new") === "1") this.story.newGame();
+    else if (params.get("continue") === "1" && (await this.story.continueGame())) { /* resumed */ }
+    else if (start) this.story.startSandbox();
+    else { this.story.mode = "title"; play.set({ mode: "title" }); this.player.lock(); }
 
     window.addEventListener("resize", () => { engine.resize(); this.outlines.resync(); });
     engine.runRenderLoop(() => this.frame());
-    (window as unknown as { __game: Game; __VIEWS: object }).__game = this;
+    if (import.meta.env.DEV) {
+      (window as unknown as { __game: Game; __VIEWS: object }).__game = this;
+      void import("../game/debug/NavDiagnostics").then((m) => m.installDiagnostics(this));
+    }
     (window as unknown as { __VIEWS: object }).__VIEWS = VIEWPOINTS;
     (window as unknown as { __EXPORTABLE: object }).__EXPORTABLE = EXPORTABLE;
     (window as unknown as { __MANIFEST: object }).__MANIFEST = ASSET_MANIFEST;
@@ -186,7 +203,9 @@ export class Game {
   teleportToFloor(level: number, pos: Vector3, yaw: number): void {
     this.scenes.setActiveFloor(level);
     this.scenes.updateOutside(pos);
+    this.life?.closeComputer();
     this.player.teleport(pos, yaw);
+    this.life?.seats.releaseAll("player"); // a teleport mid-stand would otherwise leak the reservation
     this.cam.snapTo(pos, yaw);
     if (this.cam.mode === "fly") { this.cam.setFly(false); hud.set({ freeFly: false }); }
   }
@@ -207,6 +226,7 @@ export class Game {
     const npcDoors = this.life.npcs.doorTriggers();
     for (const d of this.doors) d.update(dt, this.player.pos, npcDoors);
     this.life.update(paused ? 0 : dt);
+    this.story.update(dt);
     for (const u of this.ctx.updatables) u(dt, this.time);
     this.lighting.update(this.camera, dt);
     this.outlines.update(this.camera, dt);
@@ -217,24 +237,34 @@ export class Game {
 
   private handleKeys(): void {
     const i = this.input;
-    if (i.hit("KeyF")) this.toggleFly();
-    if (i.hit("Backquote") || i.hit("F1")) this.setDebug(!this.debug);
-    if (i.hit("KeyV")) this.setViewMode((this.viewMode + 1) % VIEW_MODES.length);
-    if (i.hit("KeyH")) this.toggleCeilings();
+    if (import.meta.env.DEV) { // developer tools only — never reachable in production builds
+      if (i.hit("KeyF")) this.toggleFly();
+      if (i.hit("Backquote") || i.hit("F1")) this.setDebug(!this.debug);
+      if (i.hit("KeyV")) this.setViewMode((this.viewMode + 1) % VIEW_MODES.length);
+      if (i.hit("KeyH")) this.toggleCeilings();
+    }
     if (i.hit("KeyO") || i.hit("Tab")) { hud.set({ settingsOpen: !hud.get().settingsOpen }); if (hud.get().settingsOpen) i.releasePointer(); }
     if (i.hit("KeyP")) hud.set({ showHelp: !hud.get().showHelp });
-    if (i.hit("Escape") && !hud.get().dialogue && !this.life.computerOpen && !hud.get().overlay) { this.setPaused(!hud.get().paused); return; }
+    if (this.story.handleKeys()) return;
+    if (i.hit("Escape") && !hud.get().dialogue && !this.life.computerOpen && !hud.get().overlay && play.get().mode !== "title") { this.setPaused(!hud.get().paused); return; }
     if (this.cam.mode === "fly" || hud.get().paused) return;
     // lift floor selection
     if (this.lift.playerInside) {
       const keys: [string, number][] = [["KeyG", 0], ["Digit0", 0], ["Digit1", 1], ["Digit2", 2], ["Digit3", 3], ["Digit4", 4], ["Digit5", 5]];
-      for (const [k, f] of keys) if (i.hit(k)) this.lift.request(f);
+      for (const [k, f] of keys) if (i.hit(k)) this.requestLift(f, "panel");
       return;
     }
     this.life.handleKeys();
   }
 
-  requestLift(level: number): void { this.lift.request(level); }
+  /** source "call" = landing call panel, "panel" = floor button inside the cabin. */
+  requestLift(level: number, source: "call" | "panel" = this.lift.playerInside ? "panel" : "call"): void {
+    this.lift.request(level);
+    if (source === "panel") this.bus.emit("LIFT_FLOOR_SELECTED", { floor: level });
+    else this.bus.emit("LIFT_CALLED", { floor: level });
+  }
+
+  sfx(kind: string): void { sfx.play(kind); }
 
   setPaused(p: boolean): void {
     hud.set({ paused: p });

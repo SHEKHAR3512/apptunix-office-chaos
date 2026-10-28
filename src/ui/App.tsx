@@ -5,7 +5,8 @@ import { Hud } from "./Hud";
 import { LoadingScreen } from "./LoadingScreen";
 import { SettingsPanel } from "./SettingsPanel";
 import { DialoguePanel } from "./dialogue/DialoguePanel";
-import { ComputerDesktop } from "./ComputerDesktop";
+import { Desktop } from "./computer/Desktop";
+import { ChapterCard, DevOpsConsole, MissionHUD, MissionJournal, OfficeMap, QADevice, TitleMenu } from "./missions/MissionUI";
 import { PauseMenu } from "./PauseMenu";
 import { ClockWidget, ReadOverlay, Toast } from "./OfficeOverlays";
 
@@ -28,7 +29,7 @@ export function App() {
     <>
       <canvas id="game" ref={canvas} tabIndex={0} />
       {ready && <Hud />}
-      {ready && <><ClockWidget /><Toast /><DialoguePanel /><ReadOverlay /><ComputerDesktop /><PauseMenu /></>}
+      {ready && <><ClockWidget /><Toast /><DialoguePanel /><ReadOverlay /><Desktop /><MissionHUD /><MissionJournal /><OfficeMap /><QADevice /><DevOpsConsole /><ChapterCard /><TitleMenu /><PauseMenu /></>}
       <SettingsPanel />
       <LoadingScreen />
     </>

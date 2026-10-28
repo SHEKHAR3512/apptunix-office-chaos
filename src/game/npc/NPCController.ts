@@ -4,7 +4,7 @@ import type { Character } from "../characters/CharacterFactory";
 import type { Gesture } from "../characters/CharacterAnimator";
 import type { SeatRegistry } from "../interactions/SeatRegistry";
 import { NPCState, StateMachine } from "./NPCStateMachine";
-import { resolveBlock } from "./NPCSchedule";
+import { microBreak, resolveBlock } from "./NPCSchedule";
 import type { AgentHandle, NPCNavigation } from "./NPCNavigation";
 import { seatTarget, spotTarget, Target } from "./NPCBehavior";
 
@@ -20,6 +20,10 @@ export interface NPCWorld {
   colleagues: (npc: NPCController) => NPCController[];
   meetingSeats: (room: string) => string[];
   breakSeats: () => string[];
+  /** Per-session variety (0 under automation so tests are deterministic). */
+  daySeed: number;
+  /** The story needs this person right now: no spontaneous wandering off. */
+  busy: (id: string) => boolean;
 }
 
 /**
@@ -31,7 +35,7 @@ export class NPCController {
   readonly fsm: StateMachine<NPCController>;
   readonly seed: number;
   activity: Activity = { kind: "work" };
-  private blockIndex = -2;
+  private blockIndex = -99;
   target: Target | null = null;
   private afterArrive: NPCState = "IDLE";
   agent: AgentHandle | null = null;
@@ -84,8 +88,8 @@ export class NPCController {
     if (this.agent) this.removeAgent();
     if (this.seatId) { this.w.seats.release(this.seatId, this.id); this.seatId = null; }
     this.talkingWith = null;
-    const blk = resolveBlock(this.char.config.schedule ?? "dev", this.w.minutes(), this.seed);
-    this.blockIndex = blk.index;
+    const blk = resolveBlock(this.char.config.schedule ?? "dev", this.w.minutes(), this.seed + this.w.daySeed);
+    this.blockIndex = blk.index * 2;
     this.activity = this.forced ?? blk.activity;
     const t = this.chooseTarget(this.activity);
     if (this.activity.kind === "leave" || blk.index < 0) { this.fsm.go("AWAY"); return; }
@@ -106,10 +110,12 @@ export class NPCController {
   /** Called at ~5–30 Hz depending on distance; dt is accumulated real time. */
   think(dt: number): void {
     // schedule changes
-    const blk = resolveBlock(this.char.config.schedule ?? "dev", this.w.minutes(), this.seed);
-    if (blk.index !== this.blockIndex && !this.inDialogue) {
-      this.blockIndex = blk.index;
-      if (!this.forced) this.beginActivity(blk.index < 0 ? { kind: "leave" } : blk.activity);
+    const blk = resolveBlock(this.char.config.schedule ?? "dev", this.w.minutes(), this.seed + this.w.daySeed);
+    const extra = this.w.busy(this.id) ? null : microBreak(blk, this.w.minutes(), this.seed, this.w.daySeed);
+    const key = blk.index * 2 + (extra ? 1 : 0);
+    if (key !== this.blockIndex && !this.inDialogue) {
+      this.blockIndex = key;
+      if (!this.forced) this.beginActivity(blk.index < 0 ? { kind: "leave" } : extra ?? blk.activity);
     }
     this.fsm.update(dt);
     this.watchdog(dt);
@@ -159,7 +165,7 @@ export class NPCController {
   // ---------------------------------------------------------------------------------------- activities
 
   /** Force an activity from gameplay (e.g. dialogue event "chai break"). */
-  force(act: Activity | null): void { this.forced = act; if (act) this.beginActivity(act); else this.blockIndex = -2; }
+  force(act: Activity | null): void { this.forced = act; if (act) this.beginActivity(act); else this.blockIndex = -99; }
 
   private beginActivity(act: Activity): void {
     this.activity = act;
@@ -341,6 +347,7 @@ export class NPCController {
   private waveTimer = 0;
 
   private updateTalking(dt: number): NPCState | void {
+    if (this.inDialogue) return; // the dialogue system drives speaking turns explicitly
     const a = this.char.animator;
     // alternate speaking turns with the colleague
     const turn = Math.floor((this.fsm.time + (this.seed % 5)) / 3.2) % 2 === 0;
@@ -388,13 +395,13 @@ export class NPCController {
   // ---------------------------------------------------------------------------------------- dialogue
 
   /** Player started talking to this NPC: stop, face DRAGON, listen. */
-  beginDialogue(playerPos: Vector3): void {
+  beginDialogue(playerPos: Vector3, keepFacing = false): void {
     this.inDialogue = true;
     this.talkingWith = null;
     if (this.agent) { this.pos.copyFrom(this.w.nav.position(this.agent)); this.removeAgent(); }
-    // standing: turn to DRAGON; seated: swivel the chair toward DRAGON
+    // standing: turn to DRAGON; seated: swivel the chair toward DRAGON (scenes keep places)
     const d = playerPos.subtract(this.pos);
-    this.yaw = Math.atan2(d.x, d.z);
+    if (!keepFacing) this.yaw = Math.atan2(d.x, d.z);
     this.char.animator.play(this.seatId ? "SitListening" : "Listening", 0.3);
     this.dialogueResume = this.state;
     this.fsm.go("TALKING");
@@ -408,8 +415,34 @@ export class NPCController {
     const seat = this.seatId ? this.w.seats.get(this.seatId) : undefined;
     if (seat) this.yaw = seat.yaw; // swivel back to the desk
     const back = this.dialogueResume === "WALKING" || this.dialogueResume === "RETURNING_TO_DESK" ? null : this.dialogueResume;
-    this.blockIndex = -2; // re-evaluate schedule
+    this.blockIndex = -99; // re-evaluate schedule
     if (back && back !== "TALKING") this.fsm.go(back);
+  }
+
+  /** Put this NPC straight into a seat (late meeting arrivals, save restore). */
+  snapToSeat(seatId: string): boolean {
+    if (this.agent) this.removeAgent();
+    if (this.seatId && this.seatId !== seatId) this.w.seats.release(this.seatId, this.id);
+    if (!this.w.seats.reserve(seatId, this.id)) return false;
+    const s = this.w.seats.get(seatId)!;
+    this.seatId = seatId;
+    this.target = seatTarget(s);
+    this.pos.set(s.x, s.y, s.z); this.yaw = s.yaw;
+    this.char.animator.play("Sitting", 0.2);
+    this.fsm.go(this.stateForActivity(true));
+    this.char.place(this.pos, this.yaw);
+    return true;
+  }
+
+  /** Put this NPC at a standing spot immediately (cutscenes). */
+  snapToSpot(pos: Vector3, yaw: number): void {
+    if (this.agent) this.removeAgent();
+    if (this.seatId) { this.w.seats.release(this.seatId, this.id); this.seatId = null; }
+    this.pos.copyFrom(pos); this.yaw = yaw;
+    this.target = { kind: "spot", pos: pos.clone(), yaw, approach: pos.clone(), label: "scripted" };
+    this.char.animator.play("Idle", 0.2);
+    this.fsm.go("IN_MEETING");
+    this.char.place(this.pos, this.yaw);
   }
 
   speak(on: boolean): void {
