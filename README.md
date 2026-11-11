@@ -1,4 +1,17 @@
+<div align="center">
+
 # APPTUNIX: Office Chaos
+
+**A story-driven, toon-shaded 3D office adventure that runs entirely in your browser.**
+
+![Babylon.js](https://img.shields.io/badge/Babylon.js-8-BB464B?logo=babylondotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-UI-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-build-646CFF?logo=vite&logoColor=white)
+![WebGPU](https://img.shields.io/badge/WebGPU-WebGL%202%20fallback-005A9C)
+![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-6E9F18)
+
+</div>
 
 A stylised, story-driven 3D office adventure that runs entirely in the browser. It's a fictional, hand-crafted version of the Apptunix office in Mohali, inspired by the illustrated look of [Messenger](https://messenger.abeto.co/).
 
@@ -52,6 +65,18 @@ Progress reports: [Phase 1](docs/ENVIRONMENT_PROGRESS.md) · [Phase 2](docs/PHAS
 - DRAGON's workstation runs a fictional desktop: Task Board, Code Editor (find the bug, choose a fix, run tests, hints and retries), Team Chat, Terminal and Browser Preview.
 - The deploy terminal is a simulation. Input goes through an allowlisted parser, and nothing is ever executed.
 - Quest HUD with a waypoint marker, a journal (**J**), an office map (**M**), relationship choices, autosave, Continue / New Game / Reset, and save export/import.
+
+---
+
+## Tech stack
+
+| Area | Tools |
+|---|---|
+| Rendering | Babylon.js (WebGPU with WebGL 2 fallback), custom toon/outline shaders |
+| Navigation | Recast nav mesh + crowd simulation |
+| Language / UI | TypeScript, React overlays |
+| Build | Vite |
+| Tests | Vitest (unit), Playwright (end-to-end, both renderers) |
 
 ---
 
@@ -151,4 +176,14 @@ art-source/      Blender handoff (exported reference GLBs and conventions)
 
 ---
 
-*Private project for the Apptunix team.*
+## Contributing
+
+Issues and pull requests are welcome. Please run `npm test` before opening a PR, and read the art direction doc before adding assets.
+
+---
+
+<div align="center">
+
+Made with ☕ and "bas ek chhota sa change hai" by the Apptunix React team.
+
+</div>
